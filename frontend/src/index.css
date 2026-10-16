@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    /* Text stays selectable: staff routinely copy UHIDs and accession numbers */
+    @apply bg-brand-surface text-slate-800 antialiased font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-secondary;
+  }
+}
+
+/* High-density medical table utilities */
+.table-dense th {
+  @apply py-2.5 px-3 text-xs font-semibold tracking-wider uppercase bg-slate-50 border-b border-brand-grid text-slate-600;
+}
+
+.table-dense td {
+  @apply py-2.5 px-3 text-xs border-b border-brand-grid/60 text-slate-800;
+}
+
+/* Panic highlight animation */
+@keyframes panic-pulse {
+  0%, 100% {
+    background-color: rgba(237, 27, 36, 0.12);
+    box-shadow: 0 0 0 0 rgba(237, 27, 36, 0.4);
+  }
+  50% {
+    background-color: rgba(237, 27, 36, 0.28);
+    box-shadow: 0 0 10px 2px rgba(237, 27, 36, 0.3);
+  }
+}
+
+.panic-highlight {
+  animation: panic-pulse 2s infinite ease-in-out;
+  color: #ed1b24 !important;
+  font-weight: 700 !important;
+}
+
+/* Sticky table header */
+.sticky-header th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Uiverse Button Styles */
+.uiverse-btn-primary {
+  background: linear-gradient(135deg, #23408e 0%, #385399 100%);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.uiverse-btn-primary:hover {
+  background: linear-gradient(135deg, #1d3575 0%, #2b437f 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(35, 64, 142, 0.35);
+}
+
+.uiverse-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(35, 64, 142, 0.2);
+}
+
+.uiverse-btn-panic {
+  background: linear-gradient(135deg, #ed1b24 0%, #c4121a 100%);
+  transition: all 0.25s ease;
+}
+
+.uiverse-btn-panic:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 27, 36, 0.4);
+}
+
+.uiverse-btn-emerald {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transition: all 0.25s ease;
+}
+
+.uiverse-btn-emerald:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+}
+
+.uiverse-btn-outline {
+  background: #ffffff;
+  color: #23408e;
+  border: 1px solid rgba(35, 64, 142, 0.35);
+  transition: all 0.2s ease;
+}
+
+.uiverse-btn-outline:hover {
+  background: rgba(35, 64, 142, 0.06);
+  border-color: #23408e;
+}
+
+/* Uiverse Card Hover Glow */
+.uiverse-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.uiverse-card:hover {
+  border-color: #385399;
+  box-shadow: 0 6px 20px -4px rgba(35, 64, 142, 0.12);
+}
+
+/* Uiverse brave-moose-56 inspired Loader */
+.moose-loader {
+  width: 54px;
+  height: 54px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moose-loader::before,
+.moose-loader::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.moose-loader::before {
+  width: 100%;
+  height: 100%;
+  border: 3.5px solid transparent;
+  border-top-color: #23408e;
+  border-bottom-color: #385399;
+  animation: moose-spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+.moose-loader::after {
+  width: 72%;
+  height: 72%;
+  border: 3.5px solid transparent;
+  border-left-color: #ed1b24;
+  border-right-color: #385399;
+  animation: moose-spin-rev 0.9s linear infinite;
+}
+
+@keyframes moose-spin {
+  0% { transform: rotate(0deg) scale(0.95); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(0.95); }
+}
+
+@keyframes moose-spin-rev {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* Mobile responsive drawer overlay */
+.drawer-backdrop {
+  backdrop-filter: blur(4px);
+  background-color: rgba(15, 23, 42, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panic-highlight,
+  .moose-loader::before,
+  .moose-loader::after {
+    animation: none;
+  }
+}
+
+/* Print Sheet Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+}

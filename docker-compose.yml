@@ -1,0 +1,60 @@
+# ApexPath LIMS: full stack (MySQL 8.4 + Spring Boot API + nginx-served SPA).
+#   cp .env.example .env   # then set the secrets
+#   docker compose up --build
+# The app is served at http://localhost:${LIMS_HTTP_PORT:-8081}; the API is not exposed directly.
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: lims_db
+      MYSQL_USER: lims
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # 'mysql,prod' = hardened: JSON logs, no demo data, no Swagger, secrets required.
+      # For a training/demo stack use 'mysql' (seeds demo accounts) and VITE_SHOW_DEMO_ACCOUNTS=true.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-mysql,prod}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/lims_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: lims
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      LIMS_JWT_SECRET: ${LIMS_JWT_SECRET:?set LIMS_JWT_SECRET (>= 32 bytes) in .env}
+      LIMS_BOOTSTRAP_ADMIN_PASSWORD: ${LIMS_BOOTSTRAP_ADMIN_PASSWORD:?set LIMS_BOOTSTRAP_ADMIN_PASSWORD (>= 12 chars) in .env}
+      # Browser origin(s) of the SPA; also the WebSocket origin allow-list
+      LIMS_CORS_ALLOWED_ORIGINS: ${LIMS_PUBLIC_URL:-http://localhost:8081}
+      LIMS_REPORT_VERIFY_BASE_URL: ${LIMS_PUBLIC_URL:-http://localhost:8081}
+    expose:
+      - "8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_ENV: ${VITE_APP_ENV:-production}
+        VITE_SHOW_DEMO_ACCOUNTS: ${VITE_SHOW_DEMO_ACCOUNTS:-false}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      LIMS_BACKEND_URL: http://backend:8080
+    ports:
+      - "${LIMS_HTTP_PORT:-8081}:80"
+
+volumes:
+  mysql-data:
